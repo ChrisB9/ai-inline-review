@@ -273,7 +273,7 @@ class ReviewCardPanel(
             editor.setBorder(JBUI.Borders.empty(4, 6))
             editor.backgroundColor = FIELD_BG
         }
-        field.document.addDocumentListener(object : DocumentListener {
+        field.addDocumentListener(object : DocumentListener {
             override fun documentChanged(event: DocumentEvent) {
                 revalidate()
                 requestRelayout()

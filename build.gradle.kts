@@ -19,6 +19,7 @@ dependencies {
         // Build/run against PhpStorm. Bump as needed.
         phpstorm("2024.2.4")
         instrumentationTools()
+        pluginVerifier()
     }
 }
 
@@ -39,6 +40,12 @@ intellijPlatform {
     }
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
+        }
     }
 }
 
