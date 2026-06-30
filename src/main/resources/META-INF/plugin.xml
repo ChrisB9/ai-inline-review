@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>co.cben.dev.aiinlinereview</id>
     <name>AI Inline Review</name>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <vendor email="christian.rodriguez.benthake@easybill.de" url="https://github.com/ChrisB9/ai-inline-review">ChrisB9</vendor>
 
     <description><![CDATA[
@@ -22,9 +22,13 @@
     ]]></description>
 
     <change-notes><![CDATA[
-        <ul><li>0.1.0 — Initial release: inline review cards, threaded replies, Comment/Action modes,
-        Plan/Code sessions, context-free notes, web-review screenshot capture, and an optional
-        Claude Code skill.</li></ul>
+        <ul>
+            <li>0.1.1 — Run editor decoration on the EDT (fixes a background-thread read-access
+                violation); drop a deprecated Document API.</li>
+            <li>0.1.0 — Initial release: inline review cards, threaded replies, Comment/Action modes,
+                Plan/Code sessions, context-free notes, web-review screenshot capture, and an optional
+                Claude Code skill.</li>
+        </ul>
     ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>

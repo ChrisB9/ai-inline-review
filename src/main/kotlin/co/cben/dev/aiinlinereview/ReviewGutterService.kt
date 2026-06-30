@@ -76,11 +76,6 @@ class ReviewGutterService(private val project: Project) : Disposable {
             },
             this,
         )
-        // Editors already open at startup need the listeners + decorations too.
-        EditorFactory.getInstance().allEditors
-            .filter { it.project == null || it.project == project }
-            .forEach { installEditorListeners(it) }
-
         // Watch .claude/review/inbox so external edits (e.g. Claude appending a reply to a note
         // file) are reloaded into the cards. Self-writes are filtered out to avoid a loop.
         project.messageBus.connect(this).subscribe(
@@ -97,9 +92,17 @@ class ReviewGutterService(private val project: Project) : Disposable {
                 }
             },
         )
-        // Reconcile from note files on startup so external edits made while closed show up.
+        // Reconcile from note files on startup (file IO off the EDT; the store listener defers any UI).
         ReviewInbox.loadAll(project).forEach { if (it.id.isNotBlank()) ReviewStore.getInstance(project).upsert(it) }
-        refresh()
+
+        // Editor decoration touches the editor model — must run on the EDT, not the startup coroutine.
+        ApplicationManager.getApplication().invokeLater {
+            if (project.isDisposed) return@invokeLater
+            EditorFactory.getInstance().allEditors
+                .filter { it.project == null || it.project == project }
+                .forEach { installEditorListeners(it) }
+            refresh()
+        }
     }
 
     private fun refresh() {

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "co.cben.dev.aiinlinereview"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     mavenCentral()

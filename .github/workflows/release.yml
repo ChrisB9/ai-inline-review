@@ -32,4 +32,5 @@ jobs:
           generate_release_notes: true
       - name: Publish to JetBrains Marketplace
         if: ${{ env.PUBLISH_TOKEN != '' }}
+        continue-on-error: true
         run: ./gradlew publishPlugin
