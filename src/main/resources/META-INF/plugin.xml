@@ -2,7 +2,7 @@
     <id>co.cben.dev.aiinlinereview</id>
     <name>AI Inline Review</name>
     <version>0.1.0</version>
-    <vendor email="christian.rodriguez.benthake@easybill.de" url="https://github.com/ChrisB9/claude-review">ChrisB9</vendor>
+    <vendor email="christian.rodriguez.benthake@easybill.de" url="https://github.com/ChrisB9/ai-inline-review">ChrisB9</vendor>
 
     <description><![CDATA[
         <p><b>AI Inline Review</b> brings human-curated, GitHub-style review comments into the editor
