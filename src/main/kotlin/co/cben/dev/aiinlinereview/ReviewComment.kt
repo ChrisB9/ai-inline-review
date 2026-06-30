@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 /**
  * One review note: a code range plus what the human wants Claude to do with it, with author,

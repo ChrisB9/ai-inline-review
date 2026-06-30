@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.1.0"
 }
 
-group = "co.cben.dev.claude"
+group = "co.cben.dev.aiinlinereview"
 version = "0.1.0"
 
 repositories {
@@ -29,6 +29,16 @@ intellijPlatform {
             sinceBuild = "242"
             untilBuild = provider { null }
         }
+    }
+
+    // Signing + publishing read credentials from the environment (set in CI secrets / locally).
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
     }
 }
 

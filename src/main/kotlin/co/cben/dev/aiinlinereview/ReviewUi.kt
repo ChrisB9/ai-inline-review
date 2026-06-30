@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBLabel

@@ -1,34 +1,51 @@
 <idea-plugin>
-    <id>co.cben.dev.claude.review</id>
-    <name>Claude Review</name>
+    <id>co.cben.dev.aiinlinereview</id>
+    <name>AI Inline Review</name>
     <version>0.1.0</version>
-    <vendor email="christian.rodriguez.benthake@easybill.de">easybill</vendor>
+    <vendor email="christian.rodriguez.benthake@easybill.de" url="https://github.com/ChrisB9/claude-review">ChrisB9</vendor>
 
     <description><![CDATA[
-        Human-curated code review for Claude Code.
-        Mark lines in the editor or diff view, attach review comments, then send them to a
-        file (.claude/review/inbox) that Claude reads to improve the code.
+        <p><b>AI Inline Review</b> brings human-curated, GitHub-style review comments into the editor
+        and hands them to your coding agent.</p>
+        <ul>
+            <li>Attach review notes to lines in the editor or diff view, with threaded replies, author
+                chips and per-note <i>Comment</i> / <i>Action</i> modes.</li>
+            <li>Notes are written to plain JSON files in your project (<code>.claude/review/inbox</code>);
+                your agent reads them, replies in-thread and (for Action notes) implements the change.</li>
+            <li>Plan / Code review sessions, context-free session notes, and a web-review mode that
+                captures an annotated screenshot of any page into a note.</li>
+        </ul>
+        <p>Ships an optional skill for <b>Claude Code</b> to drive the loop, but the review tooling
+        itself is agent-agnostic.</p>
+        <p><b>Unofficial.</b> Not affiliated with, endorsed by, or sponsored by Anthropic. "Claude" is a
+        trademark of Anthropic; it is referenced only to describe interoperability.</p>
     ]]></description>
+
+    <change-notes><![CDATA[
+        <ul><li>0.1.0 — Initial release: inline review cards, threaded replies, Comment/Action modes,
+        Plan/Code sessions, context-free notes, web-review screenshot capture, and an optional
+        Claude Code skill.</li></ul>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Claude Review" anchor="right"
-                    factoryClass="co.cben.dev.claude.review.ClaudeReviewToolWindowFactory"/>
-        <postStartupActivity implementation="co.cben.dev.claude.review.ReviewGutterStartup"/>
+        <toolWindow id="AI Inline Review" anchor="right"
+                    factoryClass="co.cben.dev.aiinlinereview.ClaudeReviewToolWindowFactory"/>
+        <postStartupActivity implementation="co.cben.dev.aiinlinereview.ReviewGutterStartup"/>
     </extensions>
 
     <actions>
-        <action id="ClaudeReview.AddComment"
-                class="co.cben.dev.claude.review.AddReviewCommentAction"
-                text="Add Claude Review Comment"
+        <action id="AiInlineReview.AddComment"
+                class="co.cben.dev.aiinlinereview.AddReviewCommentAction"
+                text="Add Review Comment"
                 description="Attach a review comment to the selected lines">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <keyboard-shortcut keymap="$default" first-keystroke="control alt C"/>
         </action>
-        <action id="ClaudeReview.Send"
-                class="co.cben.dev.claude.review.SendToClaudeAction"
-                text="Send Review to Claude"
+        <action id="AiInlineReview.Send"
+                class="co.cben.dev.aiinlinereview.SendToClaudeAction"
+                text="Send Review to Agent"
                 description="Write all review comments to .claude/review/inbox">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>

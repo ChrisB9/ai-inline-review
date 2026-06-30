@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow

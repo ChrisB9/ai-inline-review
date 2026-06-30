@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 /**
  * A note-writing session. Notes are scoped to a session; switching sessions filters the view,

@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable

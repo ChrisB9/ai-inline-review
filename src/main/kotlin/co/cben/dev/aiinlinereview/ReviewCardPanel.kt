@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.editor.EditorFactory
@@ -70,6 +70,12 @@ class ReviewCardPanel(
         }
     }
 
+    /** Open the card directly in edit mode (used for freshly created session notes). */
+    fun beginEdit() {
+        mode = Mode.EDIT
+        rebuild()
+    }
+
     private fun rebuild() {
         removeAll()
         flex.clear()
@@ -90,7 +96,12 @@ class ReviewCardPanel(
         }
         val author = comment.author.ifBlank { ReviewUi.currentAuthor }
         val items = mutableListOf<JComponent>(ReviewUi.chip(author, ReviewUi.authorColor(author)))
-        items.add(muted(if (isDraft) "new" else "Line ${comment.startLine}"))
+        val locationLabel = when {
+            isDraft -> "new"
+            comment.filePath.isBlank() -> "Session note"
+            else -> "Line ${comment.startLine}"
+        }
+        items.add(muted(locationLabel))
         ReviewUi.time(comment.createdAt).takeIf { it.isNotEmpty() }?.let { items.add(muted(it)) }
         header.add(row(items, 8), BorderLayout.WEST)
 

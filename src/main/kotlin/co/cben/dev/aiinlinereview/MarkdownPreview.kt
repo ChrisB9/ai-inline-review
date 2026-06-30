@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import java.io.File
 
@@ -37,7 +37,8 @@ object MarkdownPreview {
             line = IMAGE.replace(line) { m ->
                 val alt = m.groupValues[1]
                 val url = resolve(m.groupValues[2], basePath)
-                "<img src=\"$url\" alt=\"$alt\"/>"
+                // Swing's HTML renderer ignores CSS max-width; a width attribute scales proportionally.
+                "<img src=\"$url\" alt=\"$alt\" width=\"300\"/>"
             }
             line = LINK.replace(line) { "<a href=\"${it.groupValues[2]}\">${it.groupValues[1]}</a>" }
             line = BOLD.replace(line) { "<b>${it.groupValues[1]}</b>" }

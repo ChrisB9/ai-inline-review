@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.google.gson.Gson
 import com.intellij.openapi.diagnostic.logger

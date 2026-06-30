@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -27,13 +27,13 @@ object ReviewSkill {
         ---
         name: claude-review
         description: Run the human-curated code-review loop. Read review notes the user wrote in the
-          editor (via the Claude Review plugin), reply to them and act on them. Use when the user says
+          editor (via the AI Inline Review plugin), reply to them and act on them. Use when the user says
           "run claude review", "process my review notes", "check the review inbox", or starts this skill.
         ---
 
-        # Claude Review loop
+        # AI Inline Review loop
 
-        The Claude Review IntelliJ/PhpStorm plugin lets the user attach notes to lines of code. Each
+        The AI Inline Review IntelliJ/PhpStorm plugin lets the user attach notes to lines of code. Each
         note is one JSON file under `.claude/review/inbox/<id>.json`:
 
         ```json

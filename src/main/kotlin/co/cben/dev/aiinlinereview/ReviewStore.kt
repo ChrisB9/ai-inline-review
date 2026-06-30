@@ -1,4 +1,4 @@
-package co.cben.dev.claude.review
+package co.cben.dev.aiinlinereview
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service

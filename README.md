@@ -1,6 +1,10 @@
-# Claude Review
+# AI Inline Review
 
-A PhpStorm / IntelliJ plugin for human-curated code review with Claude Code.
+A PhpStorm / IntelliJ plugin for human-curated, inline code review that hands your notes to a coding
+agent. Ships an optional skill for **Claude Code**, but the review tooling itself is agent-agnostic.
+
+> **Unofficial.** Not affiliated with, endorsed by, or sponsored by Anthropic. "Claude" is a
+> trademark of Anthropic, referenced only to describe interoperability.
 
 You attach review notes to lines in the editor or diff view. Each note is a small JSON file in your
 project. Claude Code reads those files, replies in-thread, and — for notes you mark as **Action** —
