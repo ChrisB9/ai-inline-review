@@ -20,6 +20,7 @@ dependencies {
         phpstorm("2024.2.4")
         instrumentationTools()
         pluginVerifier()
+        zipSigner()
     }
 }
 
