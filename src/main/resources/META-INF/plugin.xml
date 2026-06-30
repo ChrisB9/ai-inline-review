@@ -1,0 +1,36 @@
+<idea-plugin>
+    <id>co.cben.dev.claude.review</id>
+    <name>Claude Review</name>
+    <version>0.1.0</version>
+    <vendor email="christian.rodriguez.benthake@easybill.de">easybill</vendor>
+
+    <description><![CDATA[
+        Human-curated code review for Claude Code.
+        Mark lines in the editor or diff view, attach review comments, then send them to a
+        file (.claude/review/inbox) that Claude reads to improve the code.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Claude Review" anchor="right"
+                    factoryClass="co.cben.dev.claude.review.ClaudeReviewToolWindowFactory"/>
+        <postStartupActivity implementation="co.cben.dev.claude.review.ReviewGutterStartup"/>
+    </extensions>
+
+    <actions>
+        <action id="ClaudeReview.AddComment"
+                class="co.cben.dev.claude.review.AddReviewCommentAction"
+                text="Add Claude Review Comment"
+                description="Attach a review comment to the selected lines">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="control alt C"/>
+        </action>
+        <action id="ClaudeReview.Send"
+                class="co.cben.dev.claude.review.SendToClaudeAction"
+                text="Send Review to Claude"
+                description="Write all review comments to .claude/review/inbox">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
