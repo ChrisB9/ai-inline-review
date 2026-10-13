@@ -23,6 +23,7 @@ dependencies {
         // Build/run against PhpStorm. Bump as needed.
         phpstorm("2024.2.4")
         bundledPlugin("Git4Idea")
+        bundledModule("intellij.platform.vcs.dvcs.impl")
         testFramework(TestFrameworkType.Platform)
         instrumentationTools()
         pluginVerifier()
