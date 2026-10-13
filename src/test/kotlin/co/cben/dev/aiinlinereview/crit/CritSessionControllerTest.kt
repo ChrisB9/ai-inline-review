@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.IOException
 
 class CritSessionControllerTest {
     private val api = FakeApi()
@@ -127,5 +128,22 @@ class CritSessionControllerTest {
         api.calls.clear()
         ResolveNudger(api).nudge(controller.snapshot!!)
         assertEquals(emptyList<String>(), api.calls)
+    }
+
+    @Test
+    fun `write succeeds even when the nudge fails`() {
+        val failing = CritSessionController(SessionEntry(key = "k"), api) { throw IOException("nudge target gone") }
+        failing.load()
+        val created = failing.createComment("a.kt", CommentDraft(startLine = 1, endLine = 1, body = "x"))
+        assertEquals(listOf(created), failing.snapshot!!.commentsFor("a.kt"))
+    }
+
+    @Test
+    fun `write succeeds even when the refresh fails`() {
+        loaded()
+        api.sessionError = IOException("crit went away")
+        val created = controller.createComment("a.kt", CommentDraft(startLine = 1, endLine = 1, body = "x"))
+        assertEquals("c_0", created.id)
+        assertEquals(listOf("create a.kt"), api.calls.filter { it.startsWith("create") })
     }
 }

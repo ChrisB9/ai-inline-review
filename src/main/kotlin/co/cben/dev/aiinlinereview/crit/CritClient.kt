@@ -14,7 +14,7 @@ class CritClient(
     private val baseUrl: String,
     private val http: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
     private val sleep: (Long) -> Unit = { Thread.sleep(it) },
-) : CritApi {
+) : CritConnection {
 
     override fun health(): Health = CritJson.parse(get("/api/health"))
     override fun config(): CritConfig = CritJson.parse(get("/api/config"))
@@ -65,7 +65,7 @@ class CritClient(
     private fun pathQuery(path: String?): Array<Pair<String, String>> =
         if (path == null) emptyArray() else arrayOf("path" to path)
 
-    fun openEvents(): CritEventStream {
+    override fun openEvents(): CritEventStream {
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/api/events"))
             .header("Accept", "text/event-stream")
             .GET()

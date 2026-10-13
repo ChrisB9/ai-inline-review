@@ -1,21 +1,29 @@
 package co.cben.dev.aiinlinereview.crit
 
 import java.nio.file.Path
+import java.util.stream.Stream
 
-class FakeApi : CritApi {
+class FakeApi : CritConnection {
     var health = Health("ok", 1)
     var config = CritConfig(author = "Reviewer")
     var session = SessionInfo(mode = "git", branch = "main", reviewRound = 1)
     var finishResult = FinishResult(approved = false)
+    var sessionError: Exception? = null
+    var events: () -> CritEventStream = { CritEventStream(Stream.empty()) }
     val comments = linkedMapOf<String, MutableList<Comment>>()
     val calls = mutableListOf<String>()
     private var next = 0
 
     override fun health() = health
     override fun config() = config
-    override fun session() = session.copy(
-        files = comments.filterValues { it.isNotEmpty() }.map { (path, list) -> FileEntry(path = path, commentCount = list.size) },
-    )
+    override fun openEvents() = events()
+
+    override fun session(): SessionInfo {
+        sessionError?.let { throw it }
+        return session.copy(
+            files = comments.filterValues { it.isNotEmpty() }.map { (path, list) -> FileEntry(path = path, commentCount = list.size) },
+        )
+    }
     override fun fileComments(path: String) = comments[path].orEmpty().toList().also { calls += "fileComments $path" }
 
     override fun createComment(path: String, draft: CommentDraft): Comment {

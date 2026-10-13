@@ -1,6 +1,9 @@
 package co.cben.dev.aiinlinereview.crit
 
+import com.intellij.openapi.diagnostic.logger
 import java.util.concurrent.CopyOnWriteArrayList
+
+private val LOG = logger<CritSessionController>()
 
 enum class RoundState { REVIEWING, AGENT_WORKING }
 
@@ -95,8 +98,11 @@ class CritSessionController(
 
     private fun <T> write(silent: Boolean, call: () -> T): T {
         val result = call()
-        refreshComments()
-        if (silent) snapshot?.let(nudger::nudge)
+        // The write already landed; a failed sync must not make callers retry it and duplicate the comment.
+        runCatching {
+            refreshComments()
+            if (silent) snapshot?.let(nudger::nudge)
+        }.onFailure { LOG.warn("crit sync after write failed", it) }
         return result
     }
 

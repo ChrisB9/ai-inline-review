@@ -30,3 +30,7 @@ interface CritApi {
         return health
     }
 }
+
+interface CritConnection : CritApi {
+    fun openEvents(): CritEventStream
+}

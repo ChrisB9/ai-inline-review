@@ -29,7 +29,7 @@ object CritSessionLocator {
 
     fun isAlive(entry: SessionEntry): Boolean = ProcessHandle.of(entry.pid).map { it.isAlive }.orElse(false)
 
-    private fun startedAt(entry: SessionEntry): OffsetDateTime =
+    fun startedAt(entry: SessionEntry): OffsetDateTime =
         runCatching { OffsetDateTime.parse(entry.startedAt) }.getOrDefault(OffsetDateTime.MIN)
 
     private fun real(path: Path): Path = runCatching { path.toRealPath() }.getOrElse { path.toAbsolutePath().normalize() }
