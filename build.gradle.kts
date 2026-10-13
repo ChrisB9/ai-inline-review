@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.21"
@@ -15,9 +17,14 @@ repositories {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.opentest4j:opentest4j:1.3.0")
     intellijPlatform {
         // Build/run against PhpStorm. Bump as needed.
         phpstorm("2024.2.4")
+        bundledPlugin("Git4Idea")
+        bundledModule("intellij.platform.vcs.dvcs.impl")
+        testFramework(TestFrameworkType.Platform)
         instrumentationTools()
         pluginVerifier()
         zipSigner()

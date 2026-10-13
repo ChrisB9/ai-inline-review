@@ -1,0 +1,13 @@
+{
+  "mode": "git", "vcs_name": "git", "branch": "crit-frontend", "base_ref": "abc123", "base_branch_name": "main",
+  "review_round": 2, "available_scopes": ["all"],
+  "files": [
+    {"path": "src/App.kt", "status": "modified", "file_type": "code", "comment_count": 2, "additions": 3, "deletions": 1},
+    {"path": "README.md", "status": "removed", "file_type": "markdown", "comment_count": 0, "orphaned": true}
+  ],
+  "review_comments": [
+    {"id": "r_aaa111", "body": "Overall fine", "author": "Reviewer", "scope": "review",
+     "created_at": "2026-10-14T08:00:00Z", "updated_at": "2026-10-14T08:00:00Z", "review_round": 1, "replies": []}
+  ],
+  "cwd": "/home/me/project", "session_key": "0db16e54feec"
+}

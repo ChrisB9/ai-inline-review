@@ -32,8 +32,10 @@
     ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="AI Inline Review" displayType="BALLOON"/>
         <toolWindow id="AI Inline Review" anchor="right"
                     factoryClass="co.cben.dev.aiinlinereview.ClaudeReviewToolWindowFactory"/>
         <postStartupActivity implementation="co.cben.dev.aiinlinereview.ReviewGutterStartup"/>
