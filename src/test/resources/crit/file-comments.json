@@ -1,0 +1,9 @@
+[
+  {"id": "c_aaa111", "start_line": 10, "end_line": 12, "body": "Why?", "quote": "foo", "anchor": "l10\nl11\nl12",
+   "author": "Reviewer", "scope": "line", "created_at": "2026-10-14T08:00:00Z", "updated_at": "2026-10-14T08:00:00Z",
+   "carried_forward": true, "review_round": 1,
+   "replies": [{"id": "rp_bbb222", "body": "Because", "author": "Claude Code", "created_at": "2026-10-14T08:01:00Z", "review_round": 1}]},
+  {"id": "c_ccc333", "start_line": 4, "end_line": 4, "side": "old", "body": "Removed?", "anchor": "old line",
+   "author": "Reviewer", "scope": "line", "created_at": "2026-10-14T08:02:00Z", "updated_at": "2026-10-14T08:02:00Z",
+   "resolved": true, "resolved_round": 2, "review_round": 2, "replies": null}
+]
