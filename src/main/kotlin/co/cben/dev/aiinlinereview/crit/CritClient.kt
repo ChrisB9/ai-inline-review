@@ -5,7 +5,10 @@ import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
+import java.util.UUID
 
 class CritClient(
     private val baseUrl: String,
@@ -17,6 +20,50 @@ class CritClient(
     override fun config(): CritConfig = CritJson.parse(get("/api/config"))
     override fun session(): SessionInfo = CritJson.parse(get("/api/session"))
     override fun fileComments(path: String): List<Comment> = CritJson.parse(get("/api/file/comments", "path" to path))
+
+    override fun createComment(path: String, draft: CommentDraft): Comment =
+        CritJson.parse(sendJson("POST", "/api/file/comments", draft, "path" to path))
+
+    override fun createReviewComment(body: String, author: String): Comment =
+        CritJson.parse(sendJson("POST", "/api/comments", linkedMapOf("body" to body, "author" to author)))
+
+    override fun editComment(path: String?, id: String, body: String): Comment =
+        CritJson.parse(sendJson("PUT", commentUrl(path, id), mapOf("body" to body), *pathQuery(path)))
+
+    override fun deleteComment(path: String?, id: String) {
+        send("DELETE", commentUrl(path, id), pathQuery(path), null)
+    }
+
+    override fun resolve(path: String?, id: String, resolved: Boolean): Comment =
+        CritJson.parse(sendJson("PUT", commentUrl(path, id) + "/resolve", mapOf("resolved" to resolved), *pathQuery(path)))
+
+    override fun reply(path: String?, id: String, body: String, author: String): Reply =
+        CritJson.parse(sendJson("POST", commentUrl(path, id) + "/replies", linkedMapOf("body" to body, "author" to author), *pathQuery(path)))
+
+    override fun finish(): FinishResult = CritJson.parse(send("POST", "/api/finish", emptyArray(), null))
+
+    override fun askAgent(path: String, id: String) {
+        sendJson("POST", "/api/agent/request", linkedMapOf("comment_id" to id, "file_path" to path))
+    }
+
+    override fun upload(file: Path): Attachment {
+        val boundary = "crit-${UUID.randomUUID()}"
+        val type = Files.probeContentType(file) ?: "application/octet-stream"
+        val head = "--$boundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"${file.fileName}\"\r\n" +
+            "Content-Type: $type\r\n\r\n"
+        val bytes = head.toByteArray() + Files.readAllBytes(file) + "\r\n--$boundary--\r\n".toByteArray()
+        val payload = "multipart/form-data; boundary=$boundary" to HttpRequest.BodyPublishers.ofByteArray(bytes)
+        return CritJson.parse(send("POST", "/api/attachments", emptyArray(), payload))
+    }
+
+    private fun sendJson(method: String, path: String, body: Any, vararg query: Pair<String, String>): String =
+        send(method, path, query, "application/json" to HttpRequest.BodyPublishers.ofString(CritJson.gson.toJson(body)))
+
+    private fun commentUrl(path: String?, id: String): String =
+        (if (path == null) "/api/review-comment/" else "/api/comment/") + URLEncoder.encode(id, Charsets.UTF_8)
+
+    private fun pathQuery(path: String?): Array<Pair<String, String>> =
+        if (path == null) emptyArray() else arrayOf("path" to path)
 
     private fun get(path: String, vararg query: Pair<String, String>) = send("GET", path, query, null)
 
