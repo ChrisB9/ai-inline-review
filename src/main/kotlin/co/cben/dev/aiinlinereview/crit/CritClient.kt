@@ -65,6 +65,19 @@ class CritClient(
     private fun pathQuery(path: String?): Array<Pair<String, String>> =
         if (path == null) emptyArray() else arrayOf("path" to path)
 
+    fun openEvents(): CritEventStream {
+        val request = HttpRequest.newBuilder(URI.create("$baseUrl/api/events"))
+            .header("Accept", "text/event-stream")
+            .GET()
+            .build()
+        val response = http.send(request, HttpResponse.BodyHandlers.ofLines())
+        if (response.statusCode() != 200) {
+            response.body().close()
+            throw CritHttpException(response.statusCode(), "events")
+        }
+        return CritEventStream(response.body())
+    }
+
     private fun get(path: String, vararg query: Pair<String, String>) = send("GET", path, query, null)
 
     private fun send(
