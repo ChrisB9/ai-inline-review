@@ -1,12 +1,19 @@
 package co.cben.dev.aiinlinereview
 
+import com.google.gson.Gson
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.HeavyPlatformTestCase
 import com.intellij.testFramework.PlatformTestUtil
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.UUID
 
 class ReviewGutterServiceTest : HeavyPlatformTestCase() {
     fun testOnlyOwningProjectAddsSelectionButton() {
@@ -49,6 +56,50 @@ class ReviewGutterServiceTest : HeavyPlatformTestCase() {
         } finally {
             factory.releaseEditor(editor)
         }
+    }
+
+    fun testInboxChangesStayInOwningProject() {
+        // A nested project must also be isolated, not just unrelated project paths.
+        val otherPath = Files.createDirectories(Paths.get(project.basePath!!, "nested-project"))
+        val otherProject = ProjectManager.getInstance().createProject("other", otherPath.toString())
+        try {
+            val owners = listOf(project, otherProject)
+            val notes = owners.map { owner ->
+                ReviewComment().apply {
+                    id = UUID.randomUUID().toString()
+                    comment = "Note for ${owner.name}"
+                }
+            }
+            val files = owners.zip(notes).map { (owner, note) -> createInboxFile(owner, note) }
+            owners.forEach { ReviewGutterService.getInstance(it).start() }
+            PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+
+            // Real VFS writes exercise the application-wide file notifications and deferred reloads.
+            ApplicationManager.getApplication().runWriteAction {
+                files.zip(notes).forEach { (file, note) ->
+                    note.replies.add(ReviewReply().apply { text = "External reply" })
+                    file.setBinaryContent(Gson().toJson(mapOf("item" to note)).toByteArray())
+                }
+            }
+            PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+
+            owners.zip(notes).forEach { (owner, note) ->
+                val comments = ReviewStore.getInstance(owner).comments
+                assertEquals("Only the owning project should import the note", listOf(note.id), comments.map { it.id })
+                assertEquals("External reply", comments.single().replies.single().text)
+                val foreignNote = notes.single { it.id != note.id }
+                assertFalse("Foreign notes must not be copied into this inbox",
+                    Files.exists(ReviewFiles.inboxDir(owner)!!.resolve("${foreignNote.id}.json")))
+            }
+        } finally {
+            ApplicationManager.getApplication().runWriteAction { Disposer.dispose(otherProject) }
+        }
+    }
+
+    private fun createInboxFile(owner: Project, note: ReviewComment): VirtualFile {
+        val path = ReviewFiles.inboxDir(owner)!!.resolve("${note.id}.json")
+        Files.writeString(path, Gson().toJson(mapOf("item" to note)))
+        return LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)!!
     }
 
     private fun buttonCount(editor: Editor): Int = editor.markupModel.allHighlighters.count {

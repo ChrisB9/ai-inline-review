@@ -82,9 +82,12 @@ class ReviewGutterService(private val project: Project) : Disposable {
             VirtualFileManager.VFS_CHANGES,
             object : BulkFileListener {
                 override fun after(events: List<VFileEvent>) {
+                    val basePath = project.basePath ?: return
+                    val inbox = Paths.get(basePath, ".claude", "review", "inbox").toAbsolutePath().normalize()
                     val changed = events.filter {
-                        val p = it.path.replace('\\', '/')
-                        p.contains("/.claude/review/inbox/") && p.endsWith(".json")
+                        val path = Paths.get(it.path).toAbsolutePath().normalize()
+                        // VFS events reach every project, including changes in nested projects.
+                        path.parent == inbox && path.fileName.toString().endsWith(".json")
                     }
                     if (changed.isNotEmpty()) {
                         ApplicationManager.getApplication().invokeLater { reloadExternal(changed.map { it.path }) }
