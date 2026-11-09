@@ -299,7 +299,12 @@ class ReviewCardPanel(
         val color = if (action) ACTION else ACCENT
         return ReviewUi.toggleChip(text, icon, color) {
             comment.mode = if (action) ReviewComment.MODE_COMMENT else ReviewComment.MODE_ACTION
-            rebuild()
+            // Keep the composer and its unsaved text intact when changing the note's mode.
+            remove((layout as BorderLayout).getLayoutComponent(BorderLayout.NORTH))
+            add(buildHeader(), BorderLayout.NORTH)
+            revalidate()
+            repaint()
+            requestRelayout()
             onModeChange()
         }
     }

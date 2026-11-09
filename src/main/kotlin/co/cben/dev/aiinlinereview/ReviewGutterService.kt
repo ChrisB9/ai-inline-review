@@ -82,9 +82,12 @@ class ReviewGutterService(private val project: Project) : Disposable {
             VirtualFileManager.VFS_CHANGES,
             object : BulkFileListener {
                 override fun after(events: List<VFileEvent>) {
+                    val basePath = project.basePath ?: return
+                    val inbox = Paths.get(basePath, ".claude", "review", "inbox").toAbsolutePath().normalize()
                     val changed = events.filter {
-                        val p = it.path.replace('\\', '/')
-                        p.contains("/.claude/review/inbox/") && p.endsWith(".json")
+                        val path = Paths.get(it.path).toAbsolutePath().normalize()
+                        // VFS events reach every project, including changes in nested projects.
+                        path.parent == inbox && path.fileName.toString().endsWith(".json")
                     }
                     if (changed.isNotEmpty()) {
                         ApplicationManager.getApplication().invokeLater { reloadExternal(changed.map { it.path }) }
@@ -99,7 +102,7 @@ class ReviewGutterService(private val project: Project) : Disposable {
         ApplicationManager.getApplication().invokeLater {
             if (project.isDisposed) return@invokeLater
             EditorFactory.getInstance().allEditors
-                .filter { it.project == null || it.project == project }
+                .filter { it.project == project }
                 .forEach { installEditorListeners(it) }
             refresh()
         }
@@ -108,11 +111,12 @@ class ReviewGutterService(private val project: Project) : Disposable {
     private fun refresh() {
         clearCards()
         EditorFactory.getInstance().allEditors
-            .filter { it.project == null || it.project == project }
+            .filter { it.project == project }
             .forEach { decorate(it) }
     }
 
     private fun decorate(editor: Editor) {
+        if (project.isDisposed || editor.isDisposed || editor.project != project) return
         if (editor !is EditorEx) return
         val projectDir = project.guessProjectDir() ?: return
         val file = FileDocumentManager.getInstance().getFile(editor.document) ?: return
@@ -245,6 +249,8 @@ class ReviewGutterService(private val project: Project) : Disposable {
     }
 
     private fun installEditorListeners(editor: Editor) {
+        // EditorFactory is application-wide; each project must only handle its own editors.
+        if (project.isDisposed || editor.isDisposed || editor.project != project) return
         if (!editorListenersInstalled.add(editor)) return
         editor.selectionModel.addSelectionListener(
             object : SelectionListener {

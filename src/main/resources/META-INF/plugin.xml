@@ -23,6 +23,8 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>Unreleased — Preserve draft text when switching between Comment and Action so
+                adding a note cannot silently discard it.</li>
             <li>0.1.1 — Run editor decoration on the EDT (fixes a background-thread read-access
                 violation); drop a deprecated Document API.</li>
             <li>0.1.0 — Initial release: inline review cards, threaded replies, Comment/Action modes,
