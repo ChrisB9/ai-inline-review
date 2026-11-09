@@ -99,7 +99,7 @@ class ReviewGutterService(private val project: Project) : Disposable {
         ApplicationManager.getApplication().invokeLater {
             if (project.isDisposed) return@invokeLater
             EditorFactory.getInstance().allEditors
-                .filter { it.project == null || it.project == project }
+                .filter { it.project == project }
                 .forEach { installEditorListeners(it) }
             refresh()
         }
@@ -108,11 +108,12 @@ class ReviewGutterService(private val project: Project) : Disposable {
     private fun refresh() {
         clearCards()
         EditorFactory.getInstance().allEditors
-            .filter { it.project == null || it.project == project }
+            .filter { it.project == project }
             .forEach { decorate(it) }
     }
 
     private fun decorate(editor: Editor) {
+        if (project.isDisposed || editor.isDisposed || editor.project != project) return
         if (editor !is EditorEx) return
         val projectDir = project.guessProjectDir() ?: return
         val file = FileDocumentManager.getInstance().getFile(editor.document) ?: return
@@ -245,6 +246,8 @@ class ReviewGutterService(private val project: Project) : Disposable {
     }
 
     private fun installEditorListeners(editor: Editor) {
+        // EditorFactory is application-wide; each project must only handle its own editors.
+        if (project.isDisposed || editor.isDisposed || editor.project != project) return
         if (!editorListenersInstalled.add(editor)) return
         editor.selectionModel.addSelectionListener(
             object : SelectionListener {
