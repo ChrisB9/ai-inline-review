@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.util.Disposer
@@ -11,9 +12,14 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.HeavyPlatformTestCase
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBLabel
+import com.intellij.util.ui.UIUtil
+import java.awt.event.MouseEvent
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.UUID
+import javax.swing.JButton
 
 class ReviewGutterServiceTest : HeavyPlatformTestCase() {
     fun testOnlyOwningProjectAddsSelectionButton() {
@@ -92,6 +98,58 @@ class ReviewGutterServiceTest : HeavyPlatformTestCase() {
                     Files.exists(ReviewFiles.inboxDir(owner)!!.resolve("${foreignNote.id}.json")))
             }
         } finally {
+            ApplicationManager.getApplication().runWriteAction { Disposer.dispose(otherProject) }
+        }
+    }
+
+    fun testDraftModeChangeKeepsTextWithMultipleProjectsOpen() {
+        val otherProject = ProjectManager.getInstance().createProject("other", createTempDir("other").path)
+        val factory = EditorFactory.getInstance()
+        val editors = mutableListOf<Editor>()
+        try {
+            listOf(project, otherProject).forEach { owner ->
+                val path = Paths.get(owner.basePath!!, "sample.txt")
+                Files.writeString(path, "selected text\nnext line")
+                val file = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)!!
+                val document = FileDocumentManager.getInstance().getDocument(file)!!
+                editors.add(factory.createEditor(document, owner))
+                ReviewGutterService.getInstance(owner).start()
+            }
+            PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+
+            for (editor in editors) {
+                val owner = editor.project!!
+                repeat(2) { index ->
+                    editor.selectionModel.setSelection(0, 8)
+                    ReviewGutterService.getInstance(owner).startDraft(editor)
+                    val draft = UIUtil.findComponentsOfType(editor.contentComponent, ReviewCardPanel::class.java).last()
+                    val field = UIUtil.findComponentsOfType(draft, EditorTextField::class.java).single()
+                    field.text = "Note $index"
+                    if (index == 1) {
+                        repeat(3) {
+                            val toggle = UIUtil.findComponentsOfType(draft, JBLabel::class.java)
+                                .single { it.toolTipText == "Click to toggle Comment / Action" }
+                            toggle.dispatchEvent(MouseEvent(toggle, MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, 1, false))
+                        }
+                    }
+                    UIUtil.findComponentsOfType(draft, JButton::class.java).single { it.text == "Add" }.doClick()
+                    PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+
+                    val notes = ReviewStore.getInstance(owner).activeComments
+                    assertEquals(index + 1, notes.size)
+                    val saved = notes.last()
+                    assertEquals("Note $index", saved.comment)
+                    assertEquals(if (index == 1) ReviewComment.MODE_ACTION else ReviewComment.MODE_COMMENT, saved.mode)
+                    val json = Files.readString(ReviewFiles.inboxDir(owner)!!.resolve("${saved.id}.json"))
+                    val onDisk = ReviewFiles.readNote(json)!!
+                    assertEquals(saved.comment, onDisk.comment)
+                    assertEquals(saved.mode, onDisk.mode)
+                    val cards = UIUtil.findComponentsOfType(editor.contentComponent, ReviewCardPanel::class.java)
+                    assertEquals(index + 1, cards.size)
+                }
+            }
+        } finally {
+            editors.forEach { factory.releaseEditor(it) }
             ApplicationManager.getApplication().runWriteAction { Disposer.dispose(otherProject) }
         }
     }
